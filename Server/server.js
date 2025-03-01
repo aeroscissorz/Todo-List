@@ -6,7 +6,7 @@ const port = 5000;
 const connectionString = "mongodb+srv://shubhamsharma10112003:abcd1234@cluster0.wbakj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 //mongoose.connect(connectionString).then(()=> console.log("connected db")).catch((err)=>console.log("error",err));
 const bodyParser = require("body-parser");
-const uuid = require("uuid");
+
 
 
 app.use(bodyParser.json()); 
