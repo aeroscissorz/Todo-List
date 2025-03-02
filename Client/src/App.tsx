@@ -13,19 +13,21 @@ function App() {
 
   // Fetch todos from backend
   useEffect(() => {
-    fetch(`${API_URL}/todos`)
-      .then(response => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch(`${API_URL}/todos`);
         if (!response.ok) throw new Error('Failed to fetch todos');
-        return response.json();
-      })
-      .then(data => {
+
+        const data = await response.json();
         setTodos(data);
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         setError('Failed to load todos');
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchTodos();
   }, []);
 
   const addTodo = async (title: string) => {
@@ -42,7 +44,7 @@ function App() {
       });
 
       if (!response.ok) throw new Error('Failed to add todo');
-      
+
       const newTodo = await response.json();
       setTodos(prev => [...prev, newTodo]);
     } catch (err) {
@@ -61,7 +63,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...todo,
+          name: todo.name,
           completed: !todo.completed,
         }),
       });
@@ -69,9 +71,7 @@ function App() {
       if (!response.ok) throw new Error('Failed to update todo');
 
       setTodos(prev =>
-        prev.map(t =>
-          t._id === id ? { ...t, completed: !t.completed } : t
-        )
+        prev.map(t => (t._id === id ? { ...t, completed: !t.completed } : t))
       );
     } catch (err) {
       setError('Failed to update todo');
@@ -103,17 +103,15 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...todo,
           name: newTitle,
+          completed: todo.completed,
         }),
       });
 
       if (!response.ok) throw new Error('Failed to edit todo');
 
       setTodos(prev =>
-        prev.map(t =>
-          t._id === id ? { ...t, name: newTitle } : t
-        )
+        prev.map(t => (t._id === id ? { ...t, name: newTitle } : t))
       );
     } catch (err) {
       setError('Failed to edit todo');
@@ -140,7 +138,7 @@ function App() {
           {error && (
             <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
               {error}
-              <button 
+              <button
                 onClick={() => setError(null)}
                 className="ml-2 text-red-800 hover:text-red-900"
               >
