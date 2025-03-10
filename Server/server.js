@@ -15,9 +15,15 @@ app.use(cors());
 
 app.use("/todos",todoRoutes);
 
+<<<<<<< HEAD
 app.use(express.static(path.join(__dirname, "../Client/dist")));
 app.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname, "Client", "dist", "index.html"));
+=======
+app.use(express.static(path.join(__dirname, "../Client/src")));
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "Client", "src", "index.html"));
+>>>>>>> b2c24a58456badb5b9c09dfc330f4b1494ff3d15
 });
 
 connectDB().then(()=>{
