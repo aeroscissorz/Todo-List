@@ -4,14 +4,17 @@ import { TodoItem } from './components/TodoItem';
 import { TodoInput } from './components/TodoInput';
 import { Todo } from './types/todo';
 
-const API_URL = 'http://localhost:5000';
+// If in development mode, use localhost; otherwise, use the production endpoint.
+const API_URL = import.meta.env.MODE === 'development'
+  ? 'http://localhost:5000'
+  : 'https://todo-list-bc1t.onrender.com';
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch todos from backend
+  // Fetch todos from the backend API
   useEffect(() => {
     fetch(`${API_URL}/todos`)
       .then(response => {
@@ -23,6 +26,7 @@ function App() {
         setLoading(false);
       })
       .catch(err => {
+        console.error(err);
         setError('Failed to load todos');
         setLoading(false);
       });
@@ -32,20 +36,16 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/todos`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: title,
-          completed: false,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: title, completed: false }),
       });
 
       if (!response.ok) throw new Error('Failed to add todo');
-      
+
       const newTodo = await response.json();
       setTodos(prev => [...prev, newTodo]);
     } catch (err) {
+      console.error(err);
       setError('Failed to add todo');
     }
   };
@@ -57,23 +57,17 @@ function App() {
 
       const response = await fetch(`${API_URL}/todos/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...todo,
-          completed: !todo.completed,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...todo, completed: !todo.completed }),
       });
 
       if (!response.ok) throw new Error('Failed to update todo');
 
       setTodos(prev =>
-        prev.map(t =>
-          t._id === id ? { ...t, completed: !t.completed } : t
-        )
+        prev.map(t => (t._id === id ? { ...t, completed: !t.completed } : t))
       );
     } catch (err) {
+      console.error(err);
       setError('Failed to update todo');
     }
   };
@@ -88,6 +82,7 @@ function App() {
 
       setTodos(prev => prev.filter(t => t._id !== id));
     } catch (err) {
+      console.error(err);
       setError('Failed to delete todo');
     }
   };
@@ -99,23 +94,17 @@ function App() {
 
       const response = await fetch(`${API_URL}/todos/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...todo,
-          name: newTitle,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...todo, name: newTitle }),
       });
 
       if (!response.ok) throw new Error('Failed to edit todo');
 
       setTodos(prev =>
-        prev.map(t =>
-          t._id === id ? { ...t, name: newTitle } : t
-        )
+        prev.map(t => (t._id === id ? { ...t, name: newTitle } : t))
       );
     } catch (err) {
+      console.error(err);
       setError('Failed to edit todo');
     }
   };
