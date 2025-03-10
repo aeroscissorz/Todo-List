@@ -8,7 +8,11 @@ const todoRoutes = require("./routes/todoRoute");
 
 const app = express();
 const port = process.env.PORT || 5000;
+<<<<<<< HEAD
 //haha
+=======
+
+>>>>>>> d9f4745bda656dd2750232202c514b8fd1164d10
 
 app.use(express.json());
 app.use(cors({ origin: "*" }));
