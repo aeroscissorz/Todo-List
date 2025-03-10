@@ -4,7 +4,7 @@ import { TodoItem } from './components/TodoItem';
 import { TodoInput } from './components/TodoInput';
 import { Todo } from './types/todo';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = "/todos";  // Remove localhost, use relative path
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
