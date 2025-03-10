@@ -4,7 +4,7 @@ import { TodoItem } from './components/TodoItem';
 import { TodoInput } from './components/TodoInput';
 import { Todo } from './types/todo';
 
-const API_URL = "/todos";  // Remove localhost, use relative path
+const API_URL = 'http://localhost:5000';
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -13,21 +13,19 @@ function App() {
 
   // Fetch todos from backend
   useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const response = await fetch(`${API_URL}/todos`);
+    fetch(`${API_URL}/todos`)
+      .then(response => {
         if (!response.ok) throw new Error('Failed to fetch todos');
-
-        const data = await response.json();
+        return response.json();
+      })
+      .then(data => {
         setTodos(data);
-      } catch (err) {
-        setError('Failed to load todos');
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchTodos();
+      })
+      .catch(err => {
+        setError('Failed to load todos');
+        setLoading(false);
+      });
   }, []);
 
   const addTodo = async (title: string) => {
@@ -44,7 +42,7 @@ function App() {
       });
 
       if (!response.ok) throw new Error('Failed to add todo');
-
+      
       const newTodo = await response.json();
       setTodos(prev => [...prev, newTodo]);
     } catch (err) {
@@ -63,7 +61,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: todo.name,
+          ...todo,
           completed: !todo.completed,
         }),
       });
@@ -71,7 +69,9 @@ function App() {
       if (!response.ok) throw new Error('Failed to update todo');
 
       setTodos(prev =>
-        prev.map(t => (t._id === id ? { ...t, completed: !t.completed } : t))
+        prev.map(t =>
+          t._id === id ? { ...t, completed: !t.completed } : t
+        )
       );
     } catch (err) {
       setError('Failed to update todo');
@@ -103,15 +103,17 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          ...todo,
           name: newTitle,
-          completed: todo.completed,
         }),
       });
 
       if (!response.ok) throw new Error('Failed to edit todo');
 
       setTodos(prev =>
-        prev.map(t => (t._id === id ? { ...t, name: newTitle } : t))
+        prev.map(t =>
+          t._id === id ? { ...t, name: newTitle } : t
+        )
       );
     } catch (err) {
       setError('Failed to edit todo');
@@ -138,7 +140,7 @@ function App() {
           {error && (
             <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
               {error}
-              <button
+              <button 
                 onClick={() => setError(null)}
                 className="ml-2 text-red-800 hover:text-red-900"
               >
