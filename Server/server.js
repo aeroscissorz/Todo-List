@@ -1,3 +1,4 @@
+const path = require("path");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -14,7 +15,10 @@ app.use(cors());
 
 app.use("/todos",todoRoutes);
 
-app.get("/", (req, res) => res.send("<h1>Server is running</h1>"));
+app.use(express.static(path.join(__dirname, "../Client/dist")));
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "Client", "dist", "index.html"));
+});
 
 connectDB().then(()=>{
     app.listen(port,()=>console.log(`server is running on ${port}`))
