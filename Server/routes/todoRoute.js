@@ -1,14 +1,14 @@
 const express = require("express");
-
-const {getTodos , createTodos, getTodoById , updateTodos , deleteTodos}  = require("../controllers/controller");
+const { getTodos, createTodos, getTodoById, updateTodos, deleteTodos } = require("../controllers/controller");
+const protectRoute = require("../middleware/protectRoutes");
 
 const router = express.Router();
 
-router.get("/",getTodos);
-router.post("/",createTodos);
-router.get("/:id",getTodoById);
-router.put("/:id",updateTodos);
-router.delete("/:id",deleteTodos);
+// Apply the middleware to protect these routes
+router.get("/", protectRoute, getTodos);
+router.post("/", protectRoute, createTodos);
+router.get("/:id", protectRoute, getTodoById);
+router.put("/:id", protectRoute, updateTodos);
+router.delete("/:id", protectRoute, deleteTodos);
 
 module.exports = router;
-

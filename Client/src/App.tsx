@@ -1,33 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { CheckSquare } from 'lucide-react';
-import { TodoItem } from './components/TodoItem';
-import { TodoInput } from './components/TodoInput';
-import { Todo } from './types/todo';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { CheckSquare } from "lucide-react";
+import { TodoItem } from "./components/TodoItem";
+import { TodoInput } from "./components/TodoInput";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import { Todo } from "./types/todo";
 
-// If in development mode, use localhost; otherwise, use the production endpoint.
-const API_URL = import.meta.env.MODE === 'development'
-  ? 'http://localhost:5000'
-  : 'https://todo-list-bc1t.onrender.com';
+const API_URL = import.meta.env.MODE === "development"
+  ? "http://localhost:5000"
+  : "https://todo-list-bc1t.onrender.com";
 
-function App() {
+const TodoApp: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch todos from the backend API
+  // Fetch todos from the backend API and check authentication
   useEffect(() => {
-    fetch(`${API_URL}/todos`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch todos');
+    fetch(`${API_URL}/todos`, { credentials: "include" }) // Ensures JWT cookie is sent
+      .then((response) => {
+        if (response.status === 401) {
+          throw new Error("Unauthorized");
+        }
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         setTodos(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
-        setError('Failed to load todos');
+        setError("Failed to load todos");
         setLoading(false);
       });
   }, []);
@@ -35,77 +39,81 @@ function App() {
   const addTodo = async (title: string) => {
     try {
       const response = await fetch(`${API_URL}/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name: title, completed: false }),
       });
 
-      if (!response.ok) throw new Error('Failed to add todo');
+      if (!response.ok) throw new Error("Failed to add todo");
 
       const newTodo = await response.json();
-      setTodos(prev => [...prev, newTodo]);
+      setTodos((prev) => [...prev, newTodo]);
     } catch (err) {
       console.error(err);
-      setError('Failed to add todo');
+      setError("Failed to add todo");
     }
   };
 
   const toggleTodo = async (id: string) => {
     try {
-      const todo = todos.find(t => t._id === id);
+      const todo = todos.find((t) => t._id === id);
       if (!todo) return;
 
       const response = await fetch(`${API_URL}/todos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ ...todo, completed: !todo.completed }),
       });
 
-      if (!response.ok) throw new Error('Failed to update todo');
+      if (!response.ok) throw new Error("Failed to update todo");
 
-      setTodos(prev =>
-        prev.map(t => (t._id === id ? { ...t, completed: !t.completed } : t))
+      setTodos((prev) =>
+        prev.map((t) => (t._id === id ? { ...t, completed: !t.completed } : t))
       );
     } catch (err) {
       console.error(err);
-      setError('Failed to update todo');
+      setError("Failed to update todo");
     }
   };
 
   const deleteTodo = async (id: string) => {
     try {
       const response = await fetch(`${API_URL}/todos/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
+        credentials: "include",
       });
 
-      if (!response.ok) throw new Error('Failed to delete todo');
+      if (!response.ok) throw new Error("Failed to delete todo");
 
-      setTodos(prev => prev.filter(t => t._id !== id));
+      setTodos((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
       console.error(err);
-      setError('Failed to delete todo');
+      setError("Failed to delete todo");
     }
   };
 
   const editTodo = async (id: string, newTitle: string) => {
     try {
-      const todo = todos.find(t => t._id === id);
+      const todo = todos.find((t) => t._id === id);
       if (!todo) return;
 
       const response = await fetch(`${API_URL}/todos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ ...todo, name: newTitle }),
       });
 
-      if (!response.ok) throw new Error('Failed to edit todo');
+      if (!response.ok) throw new Error("Failed to edit todo");
 
-      setTodos(prev =>
-        prev.map(t => (t._id === id ? { ...t, name: newTitle } : t))
+      setTodos((prev) =>
+        prev.map((t) => (t._id === id ? { ...t, name: newTitle } : t))
       );
     } catch (err) {
       console.error(err);
-      setError('Failed to edit todo');
+      setError("Failed to edit todo");
     }
   };
 
@@ -129,7 +137,7 @@ function App() {
           {error && (
             <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
               {error}
-              <button 
+              <button
                 onClick={() => setError(null)}
                 className="ml-2 text-red-800 hover:text-red-900"
               >
@@ -146,7 +154,7 @@ function App() {
                 No todos yet. Add one above!
               </p>
             ) : (
-              todos.map(todo => (
+              todos.map((todo) => (
                 <TodoItem
                   key={todo._id}
                   todo={{
@@ -165,6 +173,53 @@ function App() {
       </div>
     </div>
   );
-}
+};
+
+const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/todos`, { credentials: "include" })
+      .then((response) => {
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      })
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-600">Checking authentication...</div>;
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? <Navigate to="/todos" /> : <Navigate to="/login" />
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/todos"
+          element={
+            isAuthenticated ? (
+              <TodoApp />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
+    </Router>
+  );
+};
 
 export default App;
