@@ -11,14 +11,14 @@ const API_URL = import.meta.env.MODE === "development"
   ? "http://localhost:5000"
   : "https://todo-list-bc1t.onrender.com";
 
-const TodoApp: React.FC = () => {
+const TodoApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch todos from the backend API and check authentication
+  // Fetch todos from backend and check authentication
   useEffect(() => {
-    fetch(`${API_URL}/todos`, { credentials: "include" }) // Ensures JWT cookie is sent
+    fetch(`${API_URL}/todos`, { credentials: "include" })
       .then((response) => {
         if (response.status === 401) {
           throw new Error("Unauthorized");
@@ -117,6 +117,18 @@ const TodoApp: React.FC = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/users/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      onLogout();
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -129,9 +141,17 @@ const TodoApp: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto max-w-2xl px-4">
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center gap-3 mb-8">
-            <CheckSquare size={32} className="text-blue-500" />
-            <h1 className="text-2xl font-bold text-gray-800">Todo List</h1>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <CheckSquare size={32} className="text-blue-500" />
+              <h1 className="text-2xl font-bold text-gray-800">Todo List</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+            >
+              Logout
+            </button>
           </div>
 
           {error && (
@@ -192,6 +212,10 @@ const App: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-600">Checking authentication...</div>;
   }
@@ -201,21 +225,13 @@ const App: React.FC = () => {
       <Routes>
         <Route
           path="/"
-          element={
-            isAuthenticated ? <Navigate to="/todos" /> : <Navigate to="/login" />
-          }
+          element={isAuthenticated ? <Navigate to="/todos" /> : <Navigate to="/login" />}
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route
           path="/todos"
-          element={
-            isAuthenticated ? (
-              <TodoApp />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
+          element={isAuthenticated ? <TodoApp onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>
