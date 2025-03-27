@@ -12,7 +12,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 app.use(
     cors({
-      origin: "http://localhost:5173", // Replace with your frontend URL
+      origin: "https://todo-list-bc1t.onrender.com", // Replace with your frontend URL
       credentials: true, // Allows cookies and authentication headers
     })
   );  
