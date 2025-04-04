@@ -8,8 +8,8 @@ import SignupPage from "./pages/SignupPage";
 import { Todo } from "./types/todo";
 
 const API_URL = import.meta.env.MODE === "development"
-  ? "http://localhost:5000"
-  : "https://todo-list-bc1t.onrender.com";
+  ? "http://localhost:5000/api"
+  : "https://todo-list-bc1t.onrender.com/api";
 
 const TodoApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
