@@ -228,7 +228,7 @@ const App: React.FC = () => {
           element={isAuthenticated ? <Navigate to="/todos" /> : <Navigate to="/login" />}
         />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signin" element={<SignupPage />} />
         <Route
           path="/todos"
           element={isAuthenticated ? <TodoApp onLogout={handleLogout} /> : <Navigate to="/login" />}

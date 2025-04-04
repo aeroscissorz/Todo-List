@@ -32,23 +32,24 @@ const SignupPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch("https://todo-list-bc1t.onrender.com/api/signup", {
+      const response = await fetch("https://todo-list-bc1t.onrender.com/api/users/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullname, email, password, confirmpassword }),
       });
-
+    
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || "Failed to sign up");
       }
-
+    
       setLoading(false); // Stop loading
       navigate("/login"); // Redirect on successful signup
     } catch (err) {
       setLoading(false); // Stop loading
       setError((err as Error).message); // Display error message
     }
+    
   };
 
   return (
