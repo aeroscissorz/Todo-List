@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/users", authRoutes);
-app.use("/todos", todoRoutes);
+app.use("/api/todos", todoRoutes);
 
 // Serve Frontend from "Client/dist"
 app.use(express.static(path.join(__dirname, "../Client/dist")));
